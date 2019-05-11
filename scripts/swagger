@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# wrapper for go-swagger. This will be called by go generate, for instance.
+# The wrapper is useful to give meaningful errors to developers in order to setup their environments properly.
+
+set -eu
+
+swagger=${GOPATH}/bin/swagger
+
+if [[ -x "${swagger}" ]] ; then
+    $swagger "$@"
+else
+  >&2 echo "ERROR: go-swagger not installed"
+  exit 1
+fi

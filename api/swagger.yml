@@ -1,0 +1,36 @@
+consumes:
+- application/json
+info:
+  title: A payments API
+  version: 1.0.0
+paths: {}
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
+definitions:
+  payment:
+    type: object
+    required:
+      - description
+    properties:
+      id:
+        type: integer
+        format: int64
+        readOnly: true
+      description:
+        type: string
+        minLength: 1
+paths:
+  /:
+    get:
+      tags:
+        - payments
+      responses:
+        200:
+          description: list of payments
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/payment"
