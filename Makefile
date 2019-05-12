@@ -10,7 +10,7 @@ test: build
 	cd $(ROOT_PKG_DIR) && go test ./...
 
 run:
-	cd $(ROOT_PKG_DIR) && go run ./cmd/payments-server/main.go
+	cd $(ROOT_PKG_DIR) && go run ./cmd/payments-service/main.go
 
 generate:
 	cd $(ROOT_PKG_DIR) && go generate ./...
