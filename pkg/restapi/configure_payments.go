@@ -14,8 +14,6 @@ import (
 	"github.com/j-fuentes/payments/pkg/restapi/operations/payments"
 )
 
-//go:generate swagger generate server --target ../../pkg --name Payments --spec ../../api/swagger.yml
-
 func configureFlags(api *operations.PaymentsAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
