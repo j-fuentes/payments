@@ -22,15 +22,35 @@ definitions:
       description:
         type: string
         minLength: 1
+  payments:
+    type: object
+    required:
+      - data
+      - links
+    properties:
+      data:
+        type: array
+        items:
+          $ref: "#/definitions/payment"
+      links:
+        type: object
+        required:
+          - self
+        properties:
+          self:
+            type: string
 paths:
-  /:
+  /payments:
     get:
-      tags:
-        - payments
       responses:
         200:
           description: list of payments
           schema:
-            type: array
-            items:
-              $ref: "#/definitions/payment"
+            $ref: "#/definitions/payments"
+  /payment:
+    get:
+      responses:
+        200:
+          description: a payment
+          schema:
+            $ref: "#/definitions/payment"
