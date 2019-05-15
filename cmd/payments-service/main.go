@@ -2,11 +2,9 @@ package main
 
 import (
 	"flag"
-	"net/http"
 
 	"github.com/golang/glog"
-	"github.com/gorilla/mux"
-	"github.com/j-fuentes/payments/internal/restapi/controllers"
+	"github.com/j-fuentes/payments/internal/restapi"
 )
 
 var addr string
@@ -19,10 +17,5 @@ func init() {
 func main() {
 	flag.Parse()
 
-	r := mux.NewRouter()
-	// Mount routes
-	r.HandleFunc("/payments", controllers.GetPayments)
-
-	glog.Infof("Listening on %s", addr)
-	glog.Fatal(http.ListenAndServe(addr, r))
+	glog.Fatal(restapi.Serve(addr))
 }
