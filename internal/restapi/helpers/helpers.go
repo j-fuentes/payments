@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-openapi/strfmt"
@@ -35,4 +36,8 @@ func WriteRes(w http.ResponseWriter, m Marshable) error {
 	}
 
 	return nil
+}
+
+func GenerateLink(path string) string {
+	return fmt.Sprintf("https://domain%s", path)
 }
