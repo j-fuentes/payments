@@ -4,7 +4,7 @@ ROOT_PKG_DIR=${GOPATH}/src/$(ROOT_PKG)
 all: build
 
 build:
-	cd $(ROOT_PKG_DIR) && go build .
+	cd $(ROOT_PKG_DIR) && go build -o build/payments-service ./cmd/payments-service
 
 test: build
 	cd $(ROOT_PKG_DIR) && go test ./...
