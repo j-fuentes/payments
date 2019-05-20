@@ -1,0 +1,11 @@
+version: "3.7"
+services:
+  api:
+    image: golang:1.12
+    volumes:
+      - .:/app
+    ports:
+      - 3000:3000
+    environment:
+      - GOFLAGS=-mod=vendor
+    entrypoint: "/app/scripts/dev-entrypoint.sh"

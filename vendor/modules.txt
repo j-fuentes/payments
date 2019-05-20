@@ -28,8 +28,12 @@ github.com/go-openapi/strfmt
 github.com/go-openapi/swag
 # github.com/go-openapi/validate v0.19.0
 github.com/go-openapi/validate
+# github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
+github.com/golang/glog
 # github.com/gorilla/mux v1.7.1
 github.com/gorilla/mux
+# github.com/juju/errors v0.0.0-20190207033735-e65537c515d7
+github.com/juju/errors
 # github.com/mailru/easyjson v0.0.0-20190312143242-1de009706dbe
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter

@@ -4,13 +4,13 @@ ROOT_PKG_DIR=${GOPATH}/src/$(ROOT_PKG)
 all: build
 
 build:
-	cd $(ROOT_PKG_DIR) && go build -o build/payments-service ./cmd/payments-service
-
-test: build
-	cd $(ROOT_PKG_DIR) && go test ./...
+	cd $(ROOT_PKG_DIR) && go build -o out/payments-service ./cmd/payments-service
 
 serve:
 	cd $(ROOT_PKG_DIR) && go run ./cmd/payments-service/main.go
+
+test: build
+	cd $(ROOT_PKG_DIR) && go test ./...
 
 generate:
 	cd $(ROOT_PKG_DIR) && go generate ./...
