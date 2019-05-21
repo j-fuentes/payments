@@ -11,7 +11,7 @@ import (
 // middleware is a wrapper funcion that performs an arbitrary operation with the incoming request and then calls another htt.HandlerFunc. Ideally middlewares can be chained.
 type middleware func(next http.HandlerFunc) http.HandlerFunc
 
-// chainMiddleware returna a handler as a result of chaining the ones received as parameters.
+// chainMiddleware returns a handler as a result of chaining the ones received as parameters.
 func chainMiddleware(mw ...middleware) middleware {
 	return func(final http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
@@ -24,10 +24,15 @@ func chainMiddleware(mw ...middleware) middleware {
 	}
 }
 
+func handle(handler http.HandlerFunc) http.HandlerFunc {
+	before := chainMiddleware(withRequestID, withRequestLogging)
+	after := chainMiddleware(withResponseLogging)
+
+	return before(after(handler))
+}
+
 // Serve serves the api
 func Serve(addr string) error {
-	handle := chainMiddleware(logRequest, logResponse)
-
 	r := mux.NewRouter()
 
 	// Mount routes

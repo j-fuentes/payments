@@ -1,27 +1,43 @@
 package restapi
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/golang/glog"
+	"github.com/google/uuid"
 )
 
-// type loggingResponseWriter struct {
-// 	http.ResponseWriter
-// 	requestID  string
-// 	statusCode int
-// }
+type contextKey string
 
-func logRequest(next http.HandlerFunc) http.HandlerFunc {
+const requestIDKey = contextKey("requestID")
+
+func getRequestIDFromContext(ctx context.Context) uuid.UUID {
+	reqID, ok := ctx.Value(requestIDKey).(uuid.UUID)
+	if !ok {
+		panic("UUID not found or not correct in request context")
+	}
+	return reqID
+}
+
+func withRequestID(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		glog.Infof("--> %s %s", r.Method, r.URL.Path)
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, requestIDKey, uuid.New())
+		next.ServeHTTP(w, r.WithContext(ctx))
+	}
+}
+
+func withRequestLogging(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		glog.Infof("--> ReqID:%q %s %s", getRequestIDFromContext(r.Context()), r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
 	}
 }
 
-func logResponse(next http.HandlerFunc) http.HandlerFunc {
+func withResponseLogging(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		glog.Infof("<-- %s %s", r.Method, r.URL.Path)
+		glog.Infof("<-- ReqID:%q", getRequestIDFromContext(r.Context()))
 		next.ServeHTTP(w, r)
 	}
 }
