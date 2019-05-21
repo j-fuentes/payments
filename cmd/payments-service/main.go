@@ -5,6 +5,8 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/j-fuentes/payments/internal/restapi"
+	"github.com/j-fuentes/payments/internal/store"
+	"github.com/j-fuentes/payments/pkg/models"
 )
 
 var addr string
@@ -17,5 +19,14 @@ func init() {
 func main() {
 	flag.Parse()
 
-	glog.Fatal(restapi.Serve(addr))
+	// Sample data
+	genDesc := "hello world"
+	server := restapi.NewPaymentsServer(store.NewVolatilePaymentsStore(
+		[]*models.Payment{
+			&models.Payment{ID: 1, Description: &genDesc},
+			&models.Payment{ID: 2, Description: &genDesc},
+		},
+	))
+
+	glog.Fatal(server.Serve(addr))
 }

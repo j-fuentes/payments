@@ -5,33 +5,29 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
-	"github.com/j-fuentes/payments/internal/restapi/controllers"
+	"github.com/j-fuentes/payments/internal/store"
 )
 
-// middleware is a wrapper funcion that performs an arbitrary operation with the incoming request and then calls another htt.HandlerFunc. Ideally middlewares can be chained.
-type middleware func(next http.HandlerFunc) http.HandlerFunc
+// PaymentsServer serves a REST API for payments.
+type PaymentsServer struct {
+	paymentsStore store.PaymentsStore
+}
 
-// chainMiddleware returns a handler as a result of chaining the ones received as parameters.
-func chainMiddleware(mw ...middleware) middleware {
-	return func(final http.HandlerFunc) http.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request) {
-			last := final
-			for i := len(mw) - 1; i >= 0; i-- {
-				last = mw[i](last)
-			}
-			last(w, r)
-		}
+// NewPaymentsServer creates a new PaymentsServer that consumes data from a PaymentsStore.
+func NewPaymentsServer(s store.PaymentsStore) *PaymentsServer {
+	return &PaymentsServer{
+		paymentsStore: s,
 	}
 }
 
-// Serve serves the api
-func Serve(addr string) error {
+// Serve serves the REST API.
+func (server *PaymentsServer) Serve(addr string) error {
 	handle := chainMiddleware(withRequestID, withLogging)
 
 	r := mux.NewRouter()
 
 	// Mount routes
-	r.HandleFunc("/payments", handle(controllers.GetPayments))
+	r.HandleFunc("/payments", handle(server.GetPayments))
 
 	glog.Infof("Listening on %s", addr)
 	return http.ListenAndServe(addr, r)
