@@ -38,6 +38,7 @@ func WriteRes(w http.ResponseWriter, m Marshable) error {
 	return nil
 }
 
+// TODO: define what this should return
 func GenerateLink(path string) string {
 	return fmt.Sprintf("https://domain%s", path)
 }
