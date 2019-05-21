@@ -24,15 +24,10 @@ func chainMiddleware(mw ...middleware) middleware {
 	}
 }
 
-func handle(handler http.HandlerFunc) http.HandlerFunc {
-	before := chainMiddleware(withRequestID, withRequestLogging)
-	after := chainMiddleware(withResponseLogging)
-
-	return before(after(handler))
-}
-
 // Serve serves the api
 func Serve(addr string) error {
+	handle := chainMiddleware(withRequestID, withLogging)
+
 	r := mux.NewRouter()
 
 	// Mount routes
