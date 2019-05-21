@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"strconv"
+
 	strfmt "github.com/go-openapi/strfmt"
 
 	"github.com/go-openapi/errors"
@@ -17,21 +19,49 @@ import (
 // swagger:model payment
 type Payment struct {
 
-	// description
+	// attributes
 	// Required: true
-	// Min Length: 1
-	Description *string `json:"description"`
+	Attributes *PaymentAttributes `json:"attributes"`
 
 	// id
+	// Required: true
 	// Read Only: true
-	ID int64 `json:"id,omitempty"`
+	// Format: uuid
+	ID strfmt.UUID `json:"id"`
+
+	// organisation id
+	// Required: true
+	// Read Only: true
+	// Format: uuid
+	OrganisationID strfmt.UUID `json:"organisation_id"`
+
+	// type
+	// Required: true
+	// Read Only: true
+	// Min Length: 1
+	Type string `json:"type"`
+
+	// version
+	Version int64 `json:"version,omitempty"`
 }
 
 // Validate validates this payment
 func (m *Payment) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateDescription(formats); err != nil {
+	if err := m.validateAttributes(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOrganisationID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateType(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -41,13 +71,57 @@ func (m *Payment) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *Payment) validateDescription(formats strfmt.Registry) error {
+func (m *Payment) validateAttributes(formats strfmt.Registry) error {
 
-	if err := validate.Required("description", "body", m.Description); err != nil {
+	if err := validate.Required("attributes", "body", m.Attributes); err != nil {
 		return err
 	}
 
-	if err := validate.MinLength("description", "body", string(*m.Description), 1); err != nil {
+	if m.Attributes != nil {
+		if err := m.Attributes.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("attributes")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *Payment) validateID(formats strfmt.Registry) error {
+
+	if err := validate.Required("id", "body", strfmt.UUID(m.ID)); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("id", "body", "uuid", m.ID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Payment) validateOrganisationID(formats strfmt.Registry) error {
+
+	if err := validate.Required("organisation_id", "body", strfmt.UUID(m.OrganisationID)); err != nil {
+		return err
+	}
+
+	if err := validate.FormatOf("organisation_id", "body", "uuid", m.OrganisationID.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *Payment) validateType(formats strfmt.Registry) error {
+
+	if err := validate.RequiredString("type", "body", string(m.Type)); err != nil {
+		return err
+	}
+
+	if err := validate.MinLength("type", "body", string(m.Type), 1); err != nil {
 		return err
 	}
 
@@ -65,6 +139,811 @@ func (m *Payment) MarshalBinary() ([]byte, error) {
 // UnmarshalBinary interface implementation
 func (m *Payment) UnmarshalBinary(b []byte) error {
 	var res Payment
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PaymentAttributes payment attributes
+// swagger:model PaymentAttributes
+type PaymentAttributes struct {
+
+	// amount
+	// Pattern: ^\d+.\d+$
+	Amount string `json:"amount,omitempty"`
+
+	// beneficiary party
+	BeneficiaryParty *PaymentAttributesBeneficiaryParty `json:"beneficiary_party,omitempty"`
+
+	// charges information
+	ChargesInformation *PaymentAttributesChargesInformation `json:"charges_information,omitempty"`
+
+	// currency
+	Currency string `json:"currency,omitempty"`
+
+	// debtor party
+	DebtorParty *PaymentAttributesDebtorParty `json:"debtor_party,omitempty"`
+
+	// end to end reference
+	EndToEndReference string `json:"end_to_end_reference,omitempty"`
+
+	// fx
+	Fx *PaymentAttributesFx `json:"fx,omitempty"`
+
+	// numeric reference
+	// Pattern: ^\d+$
+	NumericReference string `json:"numeric_reference,omitempty"`
+
+	// payment id
+	// Pattern: ^\d+$
+	PaymentID string `json:"payment_id,omitempty"`
+
+	// payment purpose
+	PaymentPurpose string `json:"payment_purpose,omitempty"`
+
+	// payment scheme
+	PaymentScheme string `json:"payment_scheme,omitempty"`
+
+	// payment type
+	PaymentType string `json:"payment_type,omitempty"`
+
+	// processing date
+	// Format: date
+	ProcessingDate strfmt.Date `json:"processing_date,omitempty"`
+
+	// reference
+	Reference string `json:"reference,omitempty"`
+
+	// scheme payment sub type
+	SchemePaymentSubType string `json:"scheme_payment_sub_type,omitempty"`
+
+	// sponsor party
+	SponsorParty *PaymentAttributesSponsorParty `json:"sponsor_party,omitempty"`
+}
+
+// Validate validates this payment attributes
+func (m *PaymentAttributes) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAmount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBeneficiaryParty(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateChargesInformation(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateDebtorParty(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateFx(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateNumericReference(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePaymentID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateProcessingDate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSponsorParty(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PaymentAttributes) validateAmount(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Amount) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("attributes"+"."+"amount", "body", string(m.Amount), `^\d+.\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validateBeneficiaryParty(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.BeneficiaryParty) { // not required
+		return nil
+	}
+
+	if m.BeneficiaryParty != nil {
+		if err := m.BeneficiaryParty.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("attributes" + "." + "beneficiary_party")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validateChargesInformation(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ChargesInformation) { // not required
+		return nil
+	}
+
+	if m.ChargesInformation != nil {
+		if err := m.ChargesInformation.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("attributes" + "." + "charges_information")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validateDebtorParty(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.DebtorParty) { // not required
+		return nil
+	}
+
+	if m.DebtorParty != nil {
+		if err := m.DebtorParty.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("attributes" + "." + "debtor_party")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validateFx(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Fx) { // not required
+		return nil
+	}
+
+	if m.Fx != nil {
+		if err := m.Fx.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("attributes" + "." + "fx")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validateNumericReference(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.NumericReference) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("attributes"+"."+"numeric_reference", "body", string(m.NumericReference), `^\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validatePaymentID(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.PaymentID) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("attributes"+"."+"payment_id", "body", string(m.PaymentID), `^\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validateProcessingDate(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ProcessingDate) { // not required
+		return nil
+	}
+
+	if err := validate.FormatOf("attributes"+"."+"processing_date", "body", "date", m.ProcessingDate.String(), formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributes) validateSponsorParty(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SponsorParty) { // not required
+		return nil
+	}
+
+	if m.SponsorParty != nil {
+		if err := m.SponsorParty.Validate(formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("attributes" + "." + "sponsor_party")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PaymentAttributes) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PaymentAttributes) UnmarshalBinary(b []byte) error {
+	var res PaymentAttributes
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PaymentAttributesBeneficiaryParty payment attributes beneficiary party
+// swagger:model PaymentAttributesBeneficiaryParty
+type PaymentAttributesBeneficiaryParty struct {
+
+	// account name
+	AccountName string `json:"account_name,omitempty"`
+
+	// account number
+	// Required: true
+	AccountNumber *string `json:"account_number"`
+
+	// account number code
+	AccountNumberCode string `json:"account_number_code,omitempty"`
+
+	// account type
+	AccountType int64 `json:"account_type,omitempty"`
+
+	// address
+	Address string `json:"address,omitempty"`
+
+	// bank id
+	// Required: true
+	// Pattern: ^\d+$
+	BankID *string `json:"bank_id"`
+
+	// bank id code
+	// Required: true
+	BankIDCode *string `json:"bank_id_code"`
+
+	// name
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this payment attributes beneficiary party
+func (m *PaymentAttributesBeneficiaryParty) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAccountNumber(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBankID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBankIDCode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PaymentAttributesBeneficiaryParty) validateAccountNumber(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"beneficiary_party"+"."+"account_number", "body", m.AccountNumber); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesBeneficiaryParty) validateBankID(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"beneficiary_party"+"."+"bank_id", "body", m.BankID); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("attributes"+"."+"beneficiary_party"+"."+"bank_id", "body", string(*m.BankID), `^\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesBeneficiaryParty) validateBankIDCode(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"beneficiary_party"+"."+"bank_id_code", "body", m.BankIDCode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PaymentAttributesBeneficiaryParty) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PaymentAttributesBeneficiaryParty) UnmarshalBinary(b []byte) error {
+	var res PaymentAttributesBeneficiaryParty
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PaymentAttributesChargesInformation payment attributes charges information
+// swagger:model PaymentAttributesChargesInformation
+type PaymentAttributesChargesInformation struct {
+
+	// bearer code
+	BearerCode string `json:"bearer_code,omitempty"`
+
+	// receiver charges amount
+	// Pattern: ^\d+.\d+$
+	ReceiverChargesAmount string `json:"receiver_charges_amount,omitempty"`
+
+	// receiver charges currency
+	ReceiverChargesCurrency string `json:"receiver_charges_currency,omitempty"`
+
+	// sender charges
+	SenderCharges []*PaymentAttributesChargesInformationSenderChargesItems0 `json:"sender_charges"`
+}
+
+// Validate validates this payment attributes charges information
+func (m *PaymentAttributesChargesInformation) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateReceiverChargesAmount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateSenderCharges(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PaymentAttributesChargesInformation) validateReceiverChargesAmount(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ReceiverChargesAmount) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("attributes"+"."+"charges_information"+"."+"receiver_charges_amount", "body", string(m.ReceiverChargesAmount), `^\d+.\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesChargesInformation) validateSenderCharges(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.SenderCharges) { // not required
+		return nil
+	}
+
+	for i := 0; i < len(m.SenderCharges); i++ {
+		if swag.IsZero(m.SenderCharges[i]) { // not required
+			continue
+		}
+
+		if m.SenderCharges[i] != nil {
+			if err := m.SenderCharges[i].Validate(formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("attributes" + "." + "charges_information" + "." + "sender_charges" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PaymentAttributesChargesInformation) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PaymentAttributesChargesInformation) UnmarshalBinary(b []byte) error {
+	var res PaymentAttributesChargesInformation
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PaymentAttributesChargesInformationSenderChargesItems0 payment attributes charges information sender charges items0
+// swagger:model PaymentAttributesChargesInformationSenderChargesItems0
+type PaymentAttributesChargesInformationSenderChargesItems0 struct {
+
+	// amount
+	// Pattern: ^\d+.\d+$
+	Amount string `json:"amount,omitempty"`
+
+	// currency
+	Currency string `json:"currency,omitempty"`
+}
+
+// Validate validates this payment attributes charges information sender charges items0
+func (m *PaymentAttributesChargesInformationSenderChargesItems0) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAmount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PaymentAttributesChargesInformationSenderChargesItems0) validateAmount(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.Amount) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("amount", "body", string(m.Amount), `^\d+.\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PaymentAttributesChargesInformationSenderChargesItems0) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PaymentAttributesChargesInformationSenderChargesItems0) UnmarshalBinary(b []byte) error {
+	var res PaymentAttributesChargesInformationSenderChargesItems0
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PaymentAttributesDebtorParty payment attributes debtor party
+// swagger:model PaymentAttributesDebtorParty
+type PaymentAttributesDebtorParty struct {
+
+	// account name
+	AccountName string `json:"account_name,omitempty"`
+
+	// account number
+	// Required: true
+	AccountNumber *string `json:"account_number"`
+
+	// account number code
+	AccountNumberCode string `json:"account_number_code,omitempty"`
+
+	// account type
+	AccountType int64 `json:"account_type,omitempty"`
+
+	// address
+	Address string `json:"address,omitempty"`
+
+	// bank id
+	// Required: true
+	// Pattern: ^\d+$
+	BankID *string `json:"bank_id"`
+
+	// bank id code
+	// Required: true
+	BankIDCode *string `json:"bank_id_code"`
+
+	// name
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this payment attributes debtor party
+func (m *PaymentAttributesDebtorParty) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAccountNumber(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBankID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBankIDCode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PaymentAttributesDebtorParty) validateAccountNumber(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"debtor_party"+"."+"account_number", "body", m.AccountNumber); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesDebtorParty) validateBankID(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"debtor_party"+"."+"bank_id", "body", m.BankID); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("attributes"+"."+"debtor_party"+"."+"bank_id", "body", string(*m.BankID), `^\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesDebtorParty) validateBankIDCode(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"debtor_party"+"."+"bank_id_code", "body", m.BankIDCode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PaymentAttributesDebtorParty) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PaymentAttributesDebtorParty) UnmarshalBinary(b []byte) error {
+	var res PaymentAttributesDebtorParty
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PaymentAttributesFx payment attributes fx
+// swagger:model PaymentAttributesFx
+type PaymentAttributesFx struct {
+
+	// contract reference
+	ContractReference string `json:"contract_reference,omitempty"`
+
+	// exchange rate
+	// Pattern: ^\d+.\d+$
+	ExchangeRate string `json:"exchange_rate,omitempty"`
+
+	// original amount
+	// Pattern: ^\d+.\d+$
+	OriginalAmount string `json:"original_amount,omitempty"`
+
+	// original currency
+	OriginalCurrency string `json:"original_currency,omitempty"`
+}
+
+// Validate validates this payment attributes fx
+func (m *PaymentAttributesFx) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateExchangeRate(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateOriginalAmount(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PaymentAttributesFx) validateExchangeRate(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.ExchangeRate) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("attributes"+"."+"fx"+"."+"exchange_rate", "body", string(m.ExchangeRate), `^\d+.\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesFx) validateOriginalAmount(formats strfmt.Registry) error {
+
+	if swag.IsZero(m.OriginalAmount) { // not required
+		return nil
+	}
+
+	if err := validate.Pattern("attributes"+"."+"fx"+"."+"original_amount", "body", string(m.OriginalAmount), `^\d+.\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PaymentAttributesFx) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PaymentAttributesFx) UnmarshalBinary(b []byte) error {
+	var res PaymentAttributesFx
+	if err := swag.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}
+
+// PaymentAttributesSponsorParty payment attributes sponsor party
+// swagger:model PaymentAttributesSponsorParty
+type PaymentAttributesSponsorParty struct {
+
+	// account name
+	AccountName string `json:"account_name,omitempty"`
+
+	// account number
+	// Required: true
+	AccountNumber *string `json:"account_number"`
+
+	// account number code
+	AccountNumberCode string `json:"account_number_code,omitempty"`
+
+	// account type
+	AccountType int64 `json:"account_type,omitempty"`
+
+	// address
+	Address string `json:"address,omitempty"`
+
+	// bank id
+	// Required: true
+	// Pattern: ^\d+$
+	BankID *string `json:"bank_id"`
+
+	// bank id code
+	// Required: true
+	BankIDCode *string `json:"bank_id_code"`
+
+	// name
+	Name string `json:"name,omitempty"`
+}
+
+// Validate validates this payment attributes sponsor party
+func (m *PaymentAttributesSponsorParty) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateAccountNumber(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBankID(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateBankIDCode(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *PaymentAttributesSponsorParty) validateAccountNumber(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"sponsor_party"+"."+"account_number", "body", m.AccountNumber); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesSponsorParty) validateBankID(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"sponsor_party"+"."+"bank_id", "body", m.BankID); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("attributes"+"."+"sponsor_party"+"."+"bank_id", "body", string(*m.BankID), `^\d+$`); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *PaymentAttributesSponsorParty) validateBankIDCode(formats strfmt.Registry) error {
+
+	if err := validate.Required("attributes"+"."+"sponsor_party"+"."+"bank_id_code", "body", m.BankIDCode); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *PaymentAttributesSponsorParty) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return swag.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *PaymentAttributesSponsorParty) UnmarshalBinary(b []byte) error {
+	var res PaymentAttributesSponsorParty
 	if err := swag.ReadJSON(b, &res); err != nil {
 		return err
 	}

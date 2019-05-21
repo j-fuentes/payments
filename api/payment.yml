@@ -1,0 +1,82 @@
+type: object
+required:
+  - type
+  - id
+  - organisation_id
+  - attributes
+properties:
+  type:
+    type: string
+    minLength: 1
+    readOnly: true
+  id:
+    type: string
+    format: uuid
+    readOnly: true
+  version:
+    type: integer
+  organisation_id:
+    type: string
+    format: uuid
+    readOnly: true
+  attributes:
+    type: object
+    properties:
+      amount:
+        $ref: "types/string_float.yml"
+      beneficiary_party:
+        $ref: "aux/party.yml"
+      charges_information:
+        type: object
+        properties:
+          bearer_code:
+            type: string
+          sender_charges:
+            type: array
+            items:
+              type: object
+              properties:
+                amount:
+                  $ref: "types/string_float.yml"
+                currency:
+                  type: string
+          receiver_charges_amount:
+            $ref: "types/string_float.yml"
+          receiver_charges_currency:
+            type: string
+      currency:
+        type: string
+      debtor_party:
+        $ref: "aux/party.yml"
+      end_to_end_reference:
+        type: string
+      fx:
+        type: object
+        properties:
+          contract_reference:
+            type: string
+          exchange_rate:
+            $ref: "types/string_float.yml"
+          original_amount:
+            $ref: "types/string_float.yml"
+          original_currency:
+            type: string
+      numeric_reference:
+        $ref: "types/string_integer.yml"
+      payment_id:
+        $ref: "types/string_integer.yml"
+      payment_purpose:
+        type: string
+      payment_scheme:
+        type: string
+      payment_type:
+        type: string
+      processing_date:
+        type: string
+        format: date
+      reference:
+        type: string
+      scheme_payment_sub_type:
+        type: string
+      sponsor_party:
+        $ref: "aux/party.yml"

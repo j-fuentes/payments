@@ -4,9 +4,9 @@ import (
 	"flag"
 
 	"github.com/golang/glog"
+	"github.com/j-fuentes/payments/internal/fixtures"
 	"github.com/j-fuentes/payments/internal/restapi"
 	"github.com/j-fuentes/payments/internal/store"
-	"github.com/j-fuentes/payments/pkg/models"
 )
 
 var addr string
@@ -19,14 +19,13 @@ func init() {
 func main() {
 	flag.Parse()
 
-	// Sample data
-	genDesc := "hello world"
-	server := restapi.NewPaymentsServer(store.NewVolatilePaymentsStore(
-		[]*models.Payment{
-			&models.Payment{ID: 1, Description: &genDesc},
-			&models.Payment{ID: 2, Description: &genDesc},
-		},
-	))
+	// Seed some sample data
+	payments, err := fixtures.LoadPayments("payments.json")
+	if err != nil {
+		panic(err)
+	}
+
+	server := restapi.NewPaymentsServer(store.NewVolatilePaymentsStore(payments.Data))
 
 	glog.Fatal(server.Serve(addr))
 }

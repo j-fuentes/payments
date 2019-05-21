@@ -1,0 +1,22 @@
+type: object
+required:
+  - account_number
+  - bank_id
+  - bank_id_code
+properties:
+  account_name:
+    type: string
+  account_number:
+    type: string
+  account_number_code:
+    type: string
+  account_type:
+    type: integer
+  address:
+    type: string
+  bank_id:
+    $ref: "../types/string_integer.yml"
+  bank_id_code:
+    type: string
+  name:
+    type: string
