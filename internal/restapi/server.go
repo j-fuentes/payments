@@ -6,6 +6,8 @@ import (
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"github.com/j-fuentes/payments/internal/store"
+	"github.com/j-fuentes/payments/internal/restapi/helpers"
+	"github.com/juju/errors"
 )
 
 // PaymentsServer serves a REST API for payments.
@@ -22,6 +24,10 @@ func NewPaymentsServer(s store.PaymentsStore, externalURL string) *PaymentsServe
 	}
 }
 
+func notFoundHandler(w http.ResponseWriter, r *http.Request) {
+	helpers.WriteError(w, 404, errors.NotFoundf("The requested resource does not exist"))
+}
+
 // Serve serves the REST API.
 func (server *PaymentsServer) Serve(addr string) error {
 	handle := chainMiddleware(withRequestID, withLogging)
@@ -30,6 +36,7 @@ func (server *PaymentsServer) Serve(addr string) error {
 
 	// Mount routes
 	r.HandleFunc("/payments", handle(server.GetPayments))
+	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
 
 	glog.Infof("Listening on %s", addr)
 	return http.ListenAndServe(addr, r)
