@@ -6,18 +6,18 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/j-fuentes/payments/internal/fixtures"
 	"github.com/j-fuentes/payments/internal/store"
 	"github.com/j-fuentes/payments/pkg/models"
 )
 
 func TestGetPayments(t *testing.T) {
-	genDesc := "hello world"
-	payments := []*models.Payment{
-		&models.Payment{ID: 1, Description: &genDesc},
-		&models.Payment{ID: 2, Description: &genDesc},
+	payments, err := fixtures.LoadPayments("payments.json")
+	if err != nil {
+		t.Fatalf("%+v", err)
 	}
 
-	sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments))
+	sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments.Data), "http://localhost:3000")
 
 	t.Run("returns a valid list of payments", func(t *testing.T) {
 		req, err := http.NewRequest("GET", "/payments", nil)
@@ -44,7 +44,7 @@ func TestGetPayments(t *testing.T) {
 			t.Errorf("Validation failed for response: %+v", err)
 		}
 
-		if got, want := res.Data, payments; !reflect.DeepEqual(got, want) {
+		if got, want := res.Data, payments.Data; !reflect.DeepEqual(got, want) {
 			t.Errorf("Data does not match. got: %+v, want: %+v", got, want)
 		}
 

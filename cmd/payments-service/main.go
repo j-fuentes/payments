@@ -10,9 +10,11 @@ import (
 )
 
 var addr string
+var externalURL string
 
 func init() {
 	flag.StringVar(&addr, "addr", ":3000", "Address and port where to listen")
+	flag.StringVar(&externalURL, "externalURL", "http://localhost:3000", "External url of the service. Used for the links that are presented in the API.")
 	flag.Set("logtostderr", "true")
 }
 
@@ -25,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	server := restapi.NewPaymentsServer(store.NewVolatilePaymentsStore(payments.Data))
+	server := restapi.NewPaymentsServer(store.NewVolatilePaymentsStore(payments.Data), externalURL)
 
 	glog.Fatal(server.Serve(addr))
 }

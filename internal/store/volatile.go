@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/j-fuentes/payments/pkg/models"
@@ -25,9 +24,7 @@ func (s *VolatilePaymentsStore) GetPayments(filter Filter) ([]*models.Payment, e
 
 	// check if payment satisfies the filter
 	for _, p := range s.payments {
-		fmt.Println("skipping?")
 		if filter.OrganisationID != nil && filter.OrganisationID.String() != p.OrganisationID.String() {
-			fmt.Println("skipped")
 			continue
 		}
 
@@ -38,11 +35,9 @@ func (s *VolatilePaymentsStore) GetPayments(filter Filter) ([]*models.Payment, e
 		}
 
 		if amount > filter.MaxAmount || amount < filter.MinAmount {
-			fmt.Printf("skipped_amount: %f, %f\n", amount, filter.MaxAmount)
 			continue
 		}
 
-		fmt.Println("madeit")
 		result = append(result, p)
 	}
 

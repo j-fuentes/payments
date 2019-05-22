@@ -11,12 +11,14 @@ import (
 // PaymentsServer serves a REST API for payments.
 type PaymentsServer struct {
 	paymentsStore store.PaymentsStore
+	externalURL   string
 }
 
 // NewPaymentsServer creates a new PaymentsServer that consumes data from a PaymentsStore.
-func NewPaymentsServer(s store.PaymentsStore) *PaymentsServer {
+func NewPaymentsServer(s store.PaymentsStore, externalURL string) *PaymentsServer {
 	return &PaymentsServer{
 		paymentsStore: s,
+		externalURL:   externalURL,
 	}
 }
 

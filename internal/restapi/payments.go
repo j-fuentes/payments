@@ -2,6 +2,7 @@ package restapi
 
 import (
 	"net/http"
+	"path"
 
 	"github.com/j-fuentes/payments/internal/restapi/helpers"
 	"github.com/j-fuentes/payments/internal/store"
@@ -9,7 +10,7 @@ import (
 )
 
 func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request) {
-	payments, err := server.paymentsStore.GetPayments(store.Filter{})
+	payments, err := server.paymentsStore.GetPayments(store.NewFilter())
 	if err != nil {
 		// TODO: use a helper for proper error handling
 		panic(err)
@@ -18,7 +19,7 @@ func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request
 	result := &models.Payments{
 		Data: payments,
 		Links: &models.PaymentsLinks{
-			Self: helpers.DerefString(helpers.GenerateLink(r.URL.EscapedPath())),
+			Self: helpers.DerefString(path.Join(server.externalURL, r.URL.EscapedPath())),
 		},
 	}
 
