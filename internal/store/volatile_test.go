@@ -8,10 +8,18 @@ import (
 
 	"github.com/getlantern/deepcopy"
 	strfmt "github.com/go-openapi/strfmt"
+	"github.com/google/uuid"
 	"github.com/j-fuentes/payments/internal/fixtures"
 	"github.com/j-fuentes/payments/internal/store"
 	"github.com/j-fuentes/payments/pkg/models"
 )
+
+func copyPayment(p *models.Payment) *models.Payment {
+	var result models.Payment
+	deepcopy.Copy(&result, p)
+	result.ID = strfmt.UUID(uuid.New().String())
+	return &result
+}
 
 func TestGetPayments(t *testing.T) {
 	file := "single.json"
@@ -24,35 +32,30 @@ func TestGetPayments(t *testing.T) {
 		t.Fatalf("expected to load just one payment from %s, but found %d", file, l)
 	}
 
-	orgID := strfmt.UUID("aaaaaaaa-bbbb-cccc-dddd-ddeadbeefc43")
+	orgID := strfmt.UUID(uuid.New().String())
 	minAmount := 100.2
 	maxAmount := 300.0
 
 	canonicalProject := fixture.Data[0]
 
-	var p1 models.Payment
-	deepcopy.Copy(&p1, canonicalProject)
+	p1 := copyPayment(canonicalProject)
 
-	var p2 models.Payment
-	deepcopy.Copy(&p2, canonicalProject)
+	p2 := copyPayment(canonicalProject)
 	p2.OrganisationID = orgID
 
-	var p3 models.Payment
-	deepcopy.Copy(&p3, canonicalProject)
+	p3 := copyPayment(canonicalProject)
 	p3.Attributes.Amount = fmt.Sprintf("%.2f", minAmount+1.0)
 
-	var p4 models.Payment
-	deepcopy.Copy(&p4, canonicalProject)
+	p4 := copyPayment(canonicalProject)
 	p4.OrganisationID = orgID
 	p4.Attributes.Amount = fmt.Sprintf("%.2f", minAmount+1.0)
 
-	var p5 models.Payment
-	deepcopy.Copy(&p5, canonicalProject)
+	p5 := copyPayment(canonicalProject)
 	p5.OrganisationID = orgID
 	p5.Attributes.Amount = fmt.Sprintf("%.2f", minAmount-1.0)
 
-	var p6 models.Payment
-	deepcopy.Copy(&p6, canonicalProject)
+	p6 := copyPayment(canonicalProject)
+	p5.ID = strfmt.UUID(uuid.New().String())
 	p6.OrganisationID = orgID
 	p6.Attributes.Amount = fmt.Sprintf("%.2f", maxAmount+1.0)
 
@@ -64,7 +67,7 @@ func TestGetPayments(t *testing.T) {
 		{
 			"returns all the payments if empty filter",
 			store.NewFilter(),
-			[]*models.Payment{&p1, &p2, &p3, &p4, &p5, &p6},
+			[]*models.Payment{p1, p2, p3, p4, p5, p6},
 		},
 		{
 			"returns all the payments of one organisation",
@@ -73,7 +76,7 @@ func TestGetPayments(t *testing.T) {
 				MaxAmount:      math.Inf(1),
 				MinAmount:      0,
 			},
-			[]*models.Payment{&p2, &p4, &p5, &p6},
+			[]*models.Payment{p2, p4, p5, p6},
 		},
 		{
 			"returns all the payments between MinAmount and MaxAmount",
@@ -82,12 +85,12 @@ func TestGetPayments(t *testing.T) {
 				MinAmount:      minAmount + 2.0,
 				MaxAmount:      maxAmount + 2.0,
 			},
-			[]*models.Payment{&p6},
+			[]*models.Payment{p6},
 		},
 	}
 
 	s := store.NewVolatilePaymentsStore(
-		[]*models.Payment{&p1, &p2, &p3, &p4, &p5, &p6},
+		[]*models.Payment{p1, p2, p3, p4, p5, p6},
 	)
 
 	for _, tc := range testCases {
