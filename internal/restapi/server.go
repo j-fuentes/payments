@@ -28,15 +28,22 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 	helpers.WriteError(w, 404, errors.NotFoundf("The requested resource does not exist"))
 }
 
+func withJSON(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	}
+}
+
 // Serve serves the REST API.
 func (server *PaymentsServer) Serve(addr string) error {
-	handle := chainMiddleware(withRequestID, withLogging)
+	handle := chainMiddleware(withJSON, withRequestID, withLogging)
 
 	r := mux.NewRouter()
 
 	// Mount routes
 	r.HandleFunc("/payments", handle(server.GetPayments))
-	r.NotFoundHandler = http.HandlerFunc(notFoundHandler)
+	r.NotFoundHandler = handle(http.HandlerFunc(notFoundHandler))
 
 	glog.Infof("Listening on %s", addr)
 	return http.ListenAndServe(addr, r)
