@@ -117,6 +117,58 @@ func TestGetPayments(t *testing.T) {
 	}
 }
 
+func TestCreatePayment(t *testing.T) {
+	canonicalProject := paymentFromFixture(t)
+
+	p1 := newPaymentFrom(canonicalProject)
+	p2 := newPaymentFrom(canonicalProject)
+
+	payments := []*models.Payment{p1, p2}
+	s := store.NewVolatilePaymentsStore(payments)
+
+	t.Run("returns BadRequest if validation for Payment fails", func(t *testing.T) {
+		p := newPaymentFrom(p1)
+		// Type is required to have length > 0
+		p.Type = ""
+
+		_, err := s.CreatePayment(p)
+		if !errors.IsBadRequest(err) {
+			t.Errorf("expected BadRequest, got %+v", err)
+		}
+
+		newPayments, err := s.GetPayments(store.NewFilter())
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+
+		if got, want := newPayments, payments; !reflect.DeepEqual(got, want) {
+			t.Errorf("got: %+v, want: %+v", got, want)
+		}
+	})
+
+	t.Run("creates a payment", func(t *testing.T) {
+		newP := newPaymentFrom(p1)
+
+		res, err := s.CreatePayment(newP)
+		if err != nil {
+			t.Errorf("expected no error, got %+v", err)
+		}
+
+		newPayments, err := s.GetPayments(store.NewFilter())
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+
+		if got, want := res, newP; !reflect.DeepEqual(got, want) {
+			t.Errorf("Return value does not match. got: %+v, want: %+v", got, want)
+		}
+
+		if got, want := newPayments, []*models.Payment{p1, p2, newP}; !reflect.DeepEqual(got, want) {
+			t.Errorf("got: %+v, want: %+v", got, want)
+		}
+	})
+}
+
 func TestGetPayment(t *testing.T) {
 	canonicalProject := paymentFromFixture(t)
 

@@ -13,6 +13,7 @@ import (
 	"github.com/j-fuentes/payments/pkg/models"
 	"github.com/juju/errors"
 	"github.com/golang/glog"
+	"github.com/google/uuid"
 )
 
 func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request) {
@@ -53,6 +54,43 @@ func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request
 	}
 
 	helpers.WriteRes(w, result)
+}
+
+func (server *PaymentsServer) CreatePayment(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	var newPayment models.Payment
+	err = newPayment.UnmarshalBinary(b)
+	if err != nil {
+		glog.Errorf("%+v", err)
+		helpers.WriteError(w, http.StatusBadRequest, errors.BadRequestf("Cannot unmarshal payload"))
+		return
+	}
+
+	newPayment.ID = strfmt.UUID(uuid.New().String())
+
+	if err = newPayment.Validate(nil); err != nil {
+		helpers.WriteError(w, http.StatusBadRequest, errors.BadRequestf("Cannot validate payload: %v", err))
+		return
+	}
+
+
+	p, err := server.paymentsStore.CreatePayment(&newPayment)
+	if err != nil {
+		if errors.IsBadRequest(err) {
+			glog.Errorf("%+v", err)
+			helpers.WriteError(w, http.StatusBadRequest, err)
+		} else {
+			glog.Errorf("%+v", err)
+			helpers.WriteError(w, http.StatusInternalServerError, errors.Errorf("Internal error"))
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	helpers.WriteRes(w, p)
 }
 
 func (server *PaymentsServer) GetPayment(w http.ResponseWriter, r *http.Request) {

@@ -190,6 +190,93 @@ func TestGetPayments(t *testing.T) {
 	})
 }
 
+func TestCreatePayment(t *testing.T) {
+	canonicalProject := paymentFromFixture(t)
+	canonicalProject.Attributes.Amount = "100.0"
+
+	p1 := newPaymentFrom(canonicalProject)
+	p2 := newPaymentFrom(canonicalProject)
+
+	payments := []*models.Payment{p1, p2}
+
+	t.Run("creates a payment", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		bb, err := p2.MarshalBinary()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req, err := http.NewRequest("POST", "/payments", bytes.NewReader(bb))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.CreatePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusCreated; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+
+		var res models.Payment
+		err = res.UnmarshalBinary(rr.Body.Bytes())
+		if err != nil {
+			t.Errorf("Cannot unmarshal response: %+v", err)
+		}
+		err = res.Validate(nil)
+		if err != nil {
+			t.Errorf("Validation failed for response: %+v", err)
+		}
+	})
+
+	t.Run("returns 400 if cannot unmarshal payment", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		req, err := http.NewRequest("POST", "/payments", bytes.NewReader([]byte{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.CreatePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusBadRequest; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+	})
+
+	t.Run("returns 400 if cannot validate payment", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		p := newPaymentFrom(p1)
+		// Type should have length > 0
+		p.Type = ""
+		bb, err := p.MarshalBinary()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req, err := http.NewRequest("POST", "/payments", bytes.NewReader(bb))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.UpdatePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusBadRequest; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+	})
+}
+
 func TestGetPayment(t *testing.T) {
 	canonicalProject := paymentFromFixture(t)
 
@@ -197,7 +284,6 @@ func TestGetPayment(t *testing.T) {
 	p2 := newPaymentFrom(canonicalProject)
 
 	payments := []*models.Payment{p1, p2}
-	fmt.Println(payments)
 
 	t.Run("finds and returns a payment", func(t *testing.T) {
 		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
@@ -266,7 +352,6 @@ func TestDeletePayment(t *testing.T) {
 	p2 := newPaymentFrom(canonicalProject)
 
 	payments := []*models.Payment{p1, p2}
-	fmt.Println(payments)
 
 	t.Run("deletes a payment", func(t *testing.T) {
 		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
@@ -331,7 +416,6 @@ func TestUpdatePayment(t *testing.T) {
 	p2 := newPaymentFrom(canonicalProject)
 
 	payments := []*models.Payment{p1, p2}
-	fmt.Println(payments)
 
 	t.Run("updates a payment", func(t *testing.T) {
 		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
@@ -360,7 +444,7 @@ func TestUpdatePayment(t *testing.T) {
 			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
 		}
 
-		var res models.Empty
+		var res models.Payment
 		err = res.UnmarshalBinary(rr.Body.Bytes())
 		if err != nil {
 			t.Errorf("Cannot unmarshal response: %+v", err)
@@ -380,7 +464,6 @@ func TestUpdatePayment(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-
 
 		req, err := http.NewRequest("UPDATE", fmt.Sprintf("/payment/%s", p.ID), bytes.NewReader(bb))
 		if err != nil {

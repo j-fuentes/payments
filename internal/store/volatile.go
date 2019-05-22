@@ -46,6 +46,16 @@ func (s *VolatilePaymentsStore) GetPayments(filter Filter) ([]*models.Payment, e
 	return result, nil
 }
 
+func (s *VolatilePaymentsStore) CreatePayment(newPayment *models.Payment) (*models.Payment, error) {
+	if err := newPayment.Validate(nil); err != nil {
+		return nil, errors.BadRequestf("Payment not valid", err)
+	}
+
+	s.payments = append(s.payments, newPayment)
+
+	return newPayment, nil
+}
+
 func (s *VolatilePaymentsStore) GetPayment(id strfmt.UUID) (*models.Payment, error) {
 	for _, p := range s.payments {
 		if id.String() == p.ID.String() {
