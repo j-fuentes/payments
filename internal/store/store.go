@@ -28,4 +28,5 @@ func NewFilter() Filter {
 type PaymentsStore interface {
 	GetPayments(filter Filter) ([]*models.Payment, error)
 	GetPayment(id strfmt.UUID) (*models.Payment, error)
+	DeletePayment(id strfmt.UUID) error
 }

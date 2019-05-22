@@ -263,3 +263,78 @@ func TestGetPayment(t *testing.T) {
 		}
 	})
 }
+
+func TestDeletePayment(t *testing.T) {
+	file := "single.json"
+	fixture, err := fixtures.LoadPayments(file)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	if l := len(fixture.Data); l != 1 {
+		t.Fatalf("expected to load just one payment from %s, but found %d", file, l)
+	}
+
+	canonicalProject := fixture.Data[0]
+
+	p1 := copyPayment(canonicalProject)
+	p2 := copyPayment(canonicalProject)
+
+	payments := []*models.Payment{p1, p2}
+	fmt.Println(payments)
+
+	t.Run("deletes a payment", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		req, err := http.NewRequest("DELETE", fmt.Sprintf("/payment/%s", p2.ID), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req = mux.SetURLVars(req, map[string]string{
+			"id": p2.ID.String(),
+		})
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.DeletePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusOK; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+
+		var res models.Empty
+		err = res.UnmarshalBinary(rr.Body.Bytes())
+		if err != nil {
+			t.Errorf("Cannot unmarshal response: %+v", err)
+		}
+		err = res.Validate(nil)
+		if err != nil {
+			t.Errorf("Validation failed for response: %+v", err)
+		}
+	})
+
+	t.Run("returns 404 if not found", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		uuid := strfmt.UUID("deadbeef")
+		req, err := http.NewRequest("DELETE", fmt.Sprintf("/payment/%s", uuid), nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req = mux.SetURLVars(req, map[string]string{
+			"id": uuid.String(),
+		})
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.DeletePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusNotFound; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+	})
+}

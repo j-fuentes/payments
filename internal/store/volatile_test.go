@@ -146,3 +146,57 @@ func TestGetPayment(t *testing.T) {
 		}
 	})
 }
+
+func TestDeletePayment(t *testing.T) {
+	file := "single.json"
+	fixture, err := fixtures.LoadPayments(file)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	if l := len(fixture.Data); l != 1 {
+		t.Fatalf("expected to load just one payment from %s, but found %d", file, l)
+	}
+
+	canonicalProject := fixture.Data[0]
+
+	p1 := copyPayment(canonicalProject)
+	p2 := copyPayment(canonicalProject)
+	p3 := copyPayment(canonicalProject)
+	p4 := copyPayment(canonicalProject)
+
+	payments := []*models.Payment{p1, p2, p3, p4}
+	s := store.NewVolatilePaymentsStore(payments)
+
+	t.Run("returns 404 if not found", func(t *testing.T) {
+		err := s.DeletePayment(strfmt.UUID(uuid.New().String()))
+		if !errors.IsNotFound(err) {
+			t.Errorf("expected NotFound, got %+v", err)
+		}
+
+		newPayments, err := s.GetPayments(store.NewFilter())
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+
+		if got, want := newPayments, payments; !reflect.DeepEqual(got, want) {
+			t.Errorf("got: %+v, want: %+v", got, want)
+		}
+	})
+
+	t.Run("returns the payment", func(t *testing.T) {
+		err := s.DeletePayment(p2.ID)
+		if err != nil {
+			t.Errorf("expected no error, got %+v", err)
+		}
+
+		newPayments, err := s.GetPayments(store.NewFilter())
+		if err != nil {
+			t.Fatalf("%+v", err)
+		}
+
+		if got, want := newPayments, []*models.Payment{p1, p3, p4}; !reflect.DeepEqual(got, want) {
+			t.Errorf("got: %+v, want: %+v", got, want)
+		}
+	})
+}

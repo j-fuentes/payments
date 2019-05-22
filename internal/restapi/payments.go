@@ -71,3 +71,21 @@ func (server *PaymentsServer) GetPayment(w http.ResponseWriter, r *http.Request)
 
 	helpers.WriteRes(w, p)
 }
+
+func (server *PaymentsServer) DeletePayment(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id := strfmt.UUID(params["id"])
+
+	err := server.paymentsStore.DeletePayment(id)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			helpers.WriteError(w, 404, errors.NotFoundf("Cannot find payment with id %q", id))
+		} else {
+			glog.Errorf("%+v", err)
+			helpers.WriteError(w, 500, errors.Errorf("Internal error"))
+		}
+		return
+	}
+
+	helpers.WriteRes(w, &models.Empty{})
+}

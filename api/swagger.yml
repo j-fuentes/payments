@@ -31,6 +31,10 @@ definitions:
             type: string
   empty:
     type: object
+    properties:
+      # this property is just a trick to force swagger generated code to generate a struct for Empty
+      _:
+        type: string
   error:
     type: object
     properties:

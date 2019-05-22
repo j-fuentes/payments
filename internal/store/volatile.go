@@ -55,3 +55,14 @@ func (s *VolatilePaymentsStore) GetPayment(id strfmt.UUID) (*models.Payment, err
 
 	return nil, errors.NotFoundf("Payment with id %q", id.String())
 }
+
+func (s *VolatilePaymentsStore) DeletePayment(id strfmt.UUID) error {
+	for i, p := range s.payments {
+		if id.String() == p.ID.String() {
+			s.payments = append(s.payments[:i], s.payments[i+1:]...)
+			return nil
+		}
+	}
+
+	return errors.NotFoundf("Payment with id %q", id.String())
+}
