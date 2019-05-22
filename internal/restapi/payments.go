@@ -28,6 +28,7 @@ func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request
 		min, err := strconv.ParseFloat(minAmount, 64)
 		if err != nil {
 			helpers.WriteError(w, http.StatusBadRequest, errors.BadRequestf("invalid format in min-amount parameter"))
+			return
 		}
 		filter.MinAmount = min
 	}
@@ -36,14 +37,16 @@ func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request
 		max, err := strconv.ParseFloat(maxAmount, 64)
 		if err != nil {
 			helpers.WriteError(w, http.StatusBadRequest, errors.BadRequestf("invalid format in max-amount parameter"))
+			return
 		}
 		filter.MaxAmount = max
 	}
 
 	payments, err := server.paymentsStore.GetPayments(filter)
 	if err != nil {
-		// TODO: use a helper for proper error handling
-		panic(err)
+		glog.Errorf("Cannot GetPayments: %+v", err)
+		helpers.WriteError(w, http.StatusInternalServerError, errors.Errorf("Cannot retrieve list of payments."))
+		return
 	}
 
 	result := &models.Payments{
