@@ -3,9 +3,9 @@
 # wrapper for go-swagger. This will be called by go generate, for instance.
 # The wrapper is useful to give meaningful errors to developers in order to setup their environments properly.
 
-set -eu
+set -e
 
-swagger=${GOPATH}/bin/swagger
+swagger=$(which swagger)
 
 if [[ -x "${swagger}" ]] ; then
     $swagger "$@"

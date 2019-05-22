@@ -42,7 +42,8 @@ func (server *PaymentsServer) Serve(addr string) error {
 	r := mux.NewRouter()
 
 	// Mount routes
-	r.HandleFunc("/payments", handle(server.GetPayments))
+	r.HandleFunc("/payments", handle(server.GetPayments)).Methods("GET")
+	r.HandleFunc("/payment/{id}", handle(server.GetPayment)).Methods("GET")
 	r.NotFoundHandler = handle(http.HandlerFunc(notFoundHandler))
 
 	glog.Infof("Listening on %s", addr)

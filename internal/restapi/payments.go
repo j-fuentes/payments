@@ -5,11 +5,13 @@ import (
 	"path"
 	"strconv"
 
+	"github.com/gorilla/mux"
 	"github.com/go-openapi/strfmt"
 	"github.com/j-fuentes/payments/internal/restapi/helpers"
 	"github.com/j-fuentes/payments/internal/store"
 	"github.com/j-fuentes/payments/pkg/models"
 	"github.com/juju/errors"
+	"github.com/golang/glog"
 )
 
 func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request) {
@@ -50,4 +52,22 @@ func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request
 	}
 
 	helpers.WriteRes(w, result)
+}
+
+func (server *PaymentsServer) GetPayment(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	id := strfmt.UUID(params["id"])
+
+	p, err := server.paymentsStore.GetPayment(id)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			helpers.WriteError(w, 404, errors.NotFoundf("Cannot find payment with id %q", id))
+		} else {
+			glog.Errorf("%+v", err)
+			helpers.WriteError(w, 500, errors.Errorf("Internal error"))
+		}
+		return
+	}
+
+	helpers.WriteRes(w, p)
 }

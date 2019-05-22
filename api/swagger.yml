@@ -79,9 +79,15 @@ paths:
           description: Malformed request
           schema:
             $ref: "#/definitions/error"
-  /payment:
+  /payment/{paymentID}:
     get:
       summary: Gets a payment by its ID
+      parameters:
+        - in: path
+          name: paymentID
+          type: string
+          required: true
+          description: ID of the payment to retrieve
       responses:
         200:
           description: Success
@@ -93,6 +99,12 @@ paths:
             $ref: "#/definitions/error"
     put:
       summary: Updates a payment by its ID
+      parameters:
+        - in: path
+          name: paymentID
+          type: string
+          required: true
+          description: ID of the payment to retrieve
       responses:
         200:
           description: a payment
@@ -104,6 +116,12 @@ paths:
             $ref: "#/definitions/error"
     delete:
       summary: Deletes a payment by its ID
+      parameters:
+        - in: path
+          name: paymentID
+          type: string
+          required: true
+          description: ID of the payment to retrieve
       responses:
         200:
           description: a payment

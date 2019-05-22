@@ -27,4 +27,5 @@ func NewFilter() Filter {
 // PaymentsStore defines the interface of a store of payments.
 type PaymentsStore interface {
 	GetPayments(filter Filter) ([]*models.Payment, error)
+	GetPayment(id strfmt.UUID) (*models.Payment, error)
 }
