@@ -3,7 +3,6 @@ package helpers
 import (
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/go-openapi/strfmt"
@@ -20,33 +19,27 @@ func (m *TestMarshable) MarshalBinary() ([]byte, error)         { return m.data,
 func (m *TestMarshable) Validate(formats strfmt.Registry) error { return m.validateErr }
 
 func TestWriteRes(t *testing.T) {
-	t.Run("returns BadRequest if validation fails", func(t *testing.T) {
+	t.Run("writes ISE if validation fails", func(t *testing.T) {
 		rr := httptest.NewRecorder()
 		m := &TestMarshable{
 			validateErr: errors.New("validation error"),
 		}
 
-		err := WriteRes(rr, m)
-		if !errors.IsBadRequest(err) {
-			t.Errorf("expected BadRequest but got: %+v", err)
-		}
+		WriteRes(rr, m)
 
-		if got, want := rr.Code, http.StatusBadRequest; got != want {
+		if got, want := rr.Code, http.StatusInternalServerError; got != want {
 			t.Errorf("wrong status code. got: %d, want: %d", got, want)
 		}
 	})
 
-	t.Run("returns InternalServerError if cannot marshall", func(t *testing.T) {
+	t.Run("writes ISE if cannot marshall", func(t *testing.T) {
 		rr := httptest.NewRecorder()
 		wantErr := errors.New("marshall error")
 		m := &TestMarshable{
 			marshalErr: wantErr,
 		}
 
-		err := WriteRes(rr, m)
-		if got, want := err, wantErr; !reflect.DeepEqual(got, want) {
-			t.Errorf("returned wrong error. got: %+v, want: %+v", got, want)
-		}
+		WriteRes(rr, m)
 
 		if got, want := rr.Code, http.StatusInternalServerError; got != want {
 			t.Errorf("wrong status code. got: %d, want: %d", got, want)

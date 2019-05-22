@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-openapi/strfmt"
 	"github.com/golang/glog"
-	"github.com/juju/errors"
+	"github.com/j-fuentes/payments/pkg/models"
 )
 
 // Marshable is something that can be rendered into JSON according to the schema.
@@ -15,18 +15,19 @@ type Marshable interface {
 }
 
 // WriteRes writes in an http response a Marshable
-func WriteRes(w http.ResponseWriter, m Marshable) error {
+func WriteRes(w http.ResponseWriter, m Marshable) {
 	err := m.Validate(nil)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return errors.BadRequestf("%+v", err)
+		glog.Errorf("Validation error: %+v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	bb, err := m.MarshalBinary()
 	if err != nil {
 		glog.Errorf("Cannot marshall object: %+v", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return err
+		return
 	}
 
 	_, err = w.Write(bb)
@@ -34,5 +35,16 @@ func WriteRes(w http.ResponseWriter, m Marshable) error {
 		panic(err)
 	}
 
-	return nil
+	return
+}
+
+func WriteError(w http.ResponseWriter, code int, err error) {
+	m := &models.Error{
+		Code:    int64(code),
+		Message: err.Error(),
+	}
+
+	w.WriteHeader(code)
+
+	WriteRes(w, m)
 }

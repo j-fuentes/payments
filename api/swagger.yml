@@ -42,6 +42,19 @@ paths:
   /payments:
     get:
       summary: Lists all the payments
+      parameters:
+        - in: query
+          name: organisation-id
+          type: string
+          description: ID of the organisation the payment belongs to.
+        - in: query
+          name: min-amount
+          type: number
+          description: Min amount of the payment
+        - in: query
+          name: max-amount
+          type: number
+          description: Max amount of the payment
       responses:
         200:
           description: Success

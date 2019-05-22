@@ -2,7 +2,6 @@ package restapi
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/golang/glog"
@@ -45,7 +44,6 @@ func getStatusFromContext(ctx context.Context) int {
 
 func withRequestID(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("withRequestID")
 		ctx := r.Context()
 		ctx = context.WithValue(ctx, requestIDKey, uuid.New())
 		next.ServeHTTP(w, r.WithContext(ctx))
