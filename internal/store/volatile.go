@@ -66,3 +66,22 @@ func (s *VolatilePaymentsStore) DeletePayment(id strfmt.UUID) error {
 
 	return errors.NotFoundf("Payment with id %q", id.String())
 }
+
+func (s *VolatilePaymentsStore) UpdatePayment(id strfmt.UUID, newPayment *models.Payment) (*models.Payment, error) {
+	if k, e := id.String(), newPayment.ID.String(); k != e {
+		return nil, errors.BadRequestf("Provided ID (%q) does not match embedded ID in new Payment (%q)", k, e)
+	}
+
+	if err := newPayment.Validate(nil); err != nil {
+		return nil, errors.BadRequestf("Payment not valid", err)
+	}
+
+	for i, p := range s.payments {
+		if id.String() == p.ID.String() {
+			s.payments[i] = newPayment
+			return newPayment, nil
+		}
+	}
+
+	return nil, errors.NotFoundf("Payment with id %q", id.String())
+}

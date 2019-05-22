@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"bytes"
 
 	"github.com/getlantern/deepcopy"
 	"github.com/go-openapi/strfmt"
@@ -16,14 +17,7 @@ import (
 	"github.com/j-fuentes/payments/pkg/models"
 )
 
-func copyPayment(p *models.Payment) *models.Payment {
-	var result models.Payment
-	deepcopy.Copy(&result, p)
-	result.ID = strfmt.UUID(uuid.New().String())
-	return &result
-}
-
-func TestGetPayments(t *testing.T) {
+func paymentFromFixture(t *testing.T) *models.Payment {
 	file := "single.json"
 	fixture, err := fixtures.LoadPayments(file)
 	if err != nil {
@@ -34,15 +28,26 @@ func TestGetPayments(t *testing.T) {
 		t.Fatalf("expected to load just one payment from %s, but found %d", file, l)
 	}
 
-	canonicalProject := fixture.Data[0]
+	return fixture.Data[0]
+}
+
+func newPaymentFrom(p *models.Payment) *models.Payment {
+	var result models.Payment
+	deepcopy.Copy(&result, p)
+	result.ID = strfmt.UUID(uuid.New().String())
+	return &result
+}
+
+func TestGetPayments(t *testing.T) {
+	canonicalProject := paymentFromFixture(t)
 	canonicalProject.Attributes.Amount = "100.0"
 
-	p1 := copyPayment(canonicalProject)
-	p2 := copyPayment(canonicalProject)
-	p3 := copyPayment(canonicalProject)
-	p4 := copyPayment(canonicalProject)
-	p5 := copyPayment(canonicalProject)
-	p6 := copyPayment(canonicalProject)
+	p1 := newPaymentFrom(canonicalProject)
+	p2 := newPaymentFrom(canonicalProject)
+	p3 := newPaymentFrom(canonicalProject)
+	p4 := newPaymentFrom(canonicalProject)
+	p5 := newPaymentFrom(canonicalProject)
+	p6 := newPaymentFrom(canonicalProject)
 
 	payments := []*models.Payment{p1, p2, p3, p4, p5, p6}
 
@@ -186,20 +191,10 @@ func TestGetPayments(t *testing.T) {
 }
 
 func TestGetPayment(t *testing.T) {
-	file := "single.json"
-	fixture, err := fixtures.LoadPayments(file)
-	if err != nil {
-		t.Fatalf("%+v", err)
-	}
+	canonicalProject := paymentFromFixture(t)
 
-	if l := len(fixture.Data); l != 1 {
-		t.Fatalf("expected to load just one payment from %s, but found %d", file, l)
-	}
-
-	canonicalProject := fixture.Data[0]
-
-	p1 := copyPayment(canonicalProject)
-	p2 := copyPayment(canonicalProject)
+	p1 := newPaymentFrom(canonicalProject)
+	p2 := newPaymentFrom(canonicalProject)
 
 	payments := []*models.Payment{p1, p2}
 	fmt.Println(payments)
@@ -265,20 +260,10 @@ func TestGetPayment(t *testing.T) {
 }
 
 func TestDeletePayment(t *testing.T) {
-	file := "single.json"
-	fixture, err := fixtures.LoadPayments(file)
-	if err != nil {
-		t.Fatalf("%+v", err)
-	}
+	canonicalProject := paymentFromFixture(t)
 
-	if l := len(fixture.Data); l != 1 {
-		t.Fatalf("expected to load just one payment from %s, but found %d", file, l)
-	}
-
-	canonicalProject := fixture.Data[0]
-
-	p1 := copyPayment(canonicalProject)
-	p2 := copyPayment(canonicalProject)
+	p1 := newPaymentFrom(canonicalProject)
+	p2 := newPaymentFrom(canonicalProject)
 
 	payments := []*models.Payment{p1, p2}
 	fmt.Println(payments)
@@ -334,6 +319,137 @@ func TestDeletePayment(t *testing.T) {
 		handler.ServeHTTP(rr, req)
 
 		if got, want := rr.Code, http.StatusNotFound; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+	})
+}
+
+func TestUpdatePayment(t *testing.T) {
+	canonicalProject := paymentFromFixture(t)
+
+	p1 := newPaymentFrom(canonicalProject)
+	p2 := newPaymentFrom(canonicalProject)
+
+	payments := []*models.Payment{p1, p2}
+	fmt.Println(payments)
+
+	t.Run("updates a payment", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		bb, err := p2.MarshalBinary()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+
+		req, err := http.NewRequest("UPDATE", fmt.Sprintf("/payment/%s", p2.ID), bytes.NewReader(bb))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req = mux.SetURLVars(req, map[string]string{
+			"id": p2.ID.String(),
+		})
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.UpdatePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusOK; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+
+		var res models.Empty
+		err = res.UnmarshalBinary(rr.Body.Bytes())
+		if err != nil {
+			t.Errorf("Cannot unmarshal response: %+v", err)
+		}
+		err = res.Validate(nil)
+		if err != nil {
+			t.Errorf("Validation failed for response: %+v", err)
+		}
+	})
+
+	t.Run("returns 404 if not found", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		p := newPaymentFrom(p1)
+		p.ID = strfmt.UUID(uuid.New().String())
+		bb, err := p.MarshalBinary()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+
+		req, err := http.NewRequest("UPDATE", fmt.Sprintf("/payment/%s", p.ID), bytes.NewReader(bb))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req = mux.SetURLVars(req, map[string]string{
+			"id": p.ID.String(),
+		})
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.UpdatePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusNotFound; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+	})
+
+	t.Run("returns 400 if cannot unmarshal payment", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		p := newPaymentFrom(p1)
+
+		req, err := http.NewRequest("UPDATE", fmt.Sprintf("/payment/%s", p.ID), bytes.NewReader([]byte{}))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req = mux.SetURLVars(req, map[string]string{
+			"id": p.ID.String(),
+		})
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.UpdatePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusBadRequest; got != want {
+			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
+		}
+	})
+
+	t.Run("returns 400 if cannot validate payment", func(t *testing.T) {
+		sv := NewPaymentsServer(store.NewVolatilePaymentsStore(payments), "http://localhost:3000")
+
+		p := newPaymentFrom(p1)
+		p.Type = ""
+		bb, err := p.MarshalBinary()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req, err := http.NewRequest("UPDATE", fmt.Sprintf("/payment/%s", p.ID), bytes.NewReader(bb))
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		req = mux.SetURLVars(req, map[string]string{
+			"id": p.ID.String(),
+		})
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(sv.UpdatePayment)
+
+		handler.ServeHTTP(rr, req)
+
+		if got, want := rr.Code, http.StatusBadRequest; got != want {
 			t.Errorf("handler returned wrong status code. got: %d, want: %d", got, want)
 		}
 	})

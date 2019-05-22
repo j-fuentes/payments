@@ -29,4 +29,5 @@ type PaymentsStore interface {
 	GetPayments(filter Filter) ([]*models.Payment, error)
 	GetPayment(id strfmt.UUID) (*models.Payment, error)
 	DeletePayment(id strfmt.UUID) error
+	UpdatePayment(id strfmt.UUID, newPayment *models.Payment) (*models.Payment, error)
 }
