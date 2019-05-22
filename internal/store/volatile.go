@@ -3,7 +3,9 @@ package store
 import (
 	"strconv"
 
+	strfmt "github.com/go-openapi/strfmt"
 	"github.com/j-fuentes/payments/pkg/models"
+	"github.com/juju/errors"
 )
 
 // VolatilePaymentsStore is an in-memory store for payments. It implements the PaymentsStore interface.
@@ -42,4 +44,14 @@ func (s *VolatilePaymentsStore) GetPayments(filter Filter) ([]*models.Payment, e
 	}
 
 	return result, nil
+}
+
+func (s *VolatilePaymentsStore) GetPayment(id strfmt.UUID) (*models.Payment, error) {
+	for _, p := range s.payments {
+		if id.String() == p.ID.String() {
+			return p, nil
+		}
+	}
+
+	return nil, errors.NotFoundf("Payment with id %q", id.String())
 }

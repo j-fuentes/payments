@@ -12,6 +12,7 @@ import (
 	"github.com/j-fuentes/payments/internal/fixtures"
 	"github.com/j-fuentes/payments/internal/store"
 	"github.com/j-fuentes/payments/pkg/models"
+	"github.com/juju/errors"
 )
 
 func copyPayment(p *models.Payment) *models.Payment {
@@ -105,4 +106,43 @@ func TestGetPayments(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetPayment(t *testing.T) {
+	file := "single.json"
+	fixture, err := fixtures.LoadPayments(file)
+	if err != nil {
+		t.Fatalf("%+v", err)
+	}
+
+	if l := len(fixture.Data); l != 1 {
+		t.Fatalf("expected to load just one payment from %s, but found %d", file, l)
+	}
+
+	canonicalProject := fixture.Data[0]
+
+	p1 := copyPayment(canonicalProject)
+	p2 := copyPayment(canonicalProject)
+
+	s := store.NewVolatilePaymentsStore(
+		[]*models.Payment{p1, p2},
+	)
+
+	t.Run("returns 404 if not found", func(t *testing.T) {
+		_, err := s.GetPayment(strfmt.UUID(uuid.New().String()))
+		if !errors.IsNotFound(err) {
+			t.Errorf("expected NotFound, got %+v", err)
+		}
+	})
+
+	t.Run("returns the payment", func(t *testing.T) {
+		p, err := s.GetPayment(p2.ID)
+		if err != nil {
+			t.Errorf("expected no error, got %+v", err)
+		}
+
+		if got, want := p, p2; !reflect.DeepEqual(got, want) {
+			t.Errorf("got: %+v, want: %+v", got, want)
+		}
+	})
 }
