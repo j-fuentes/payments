@@ -29,18 +29,74 @@ definitions:
         properties:
           self:
             type: string
+  empty:
+    type: object
+  error:
+    type: object
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
 paths:
   /payments:
     get:
+      summary: Lists all the payments
       responses:
         200:
-          description: list of payments
+          description: Success
           schema:
             $ref: "#/definitions/payments"
+    post:
+      summary: Creates a new payment
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/payment'
+      responses:
+        201:
+          description: Created
+          schema:
+            $ref: "#/definitions/payment"
+        422:
+          description: Malformed request
+          schema:
+            $ref: "#/definitions/error"
   /payment:
     get:
+      summary: Gets a payment by its ID
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: "#/definitions/payment"
+        404:
+          description: Payment not found
+          schema:
+            $ref: "#/definitions/error"
+    put:
+      summary: Updates a payment by its ID
       responses:
         200:
           description: a payment
           schema:
-            $ref: "#/definitions/payment"
+            $ref: "#/definitions/empty"
+        404:
+          description: Payment not found
+          schema:
+            $ref: "#/definitions/error"
+    delete:
+      summary: Deletes a payment by its ID
+      responses:
+        200:
+          description: a payment
+          schema:
+            $ref: "#/definitions/empty"
+        404:
+          description: Payment not found
+          schema:
+            $ref: "#/definitions/error"
