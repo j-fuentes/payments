@@ -65,10 +65,18 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "ID of the payment to retrieve",
+            "description": "ID of the payment to update",
             "name": "paymentID",
             "in": "path",
             "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/payment"
+            }
           }
         ],
         "responses": {
@@ -91,7 +99,7 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "ID of the payment to retrieve",
+            "description": "ID of the payment to delete",
             "name": "paymentID",
             "in": "path",
             "required": true
@@ -276,10 +284,18 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "ID of the payment to retrieve",
+            "description": "ID of the payment to update",
             "name": "paymentID",
             "in": "path",
             "required": true
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/payment"
+            }
           }
         ],
         "responses": {
@@ -302,7 +318,7 @@ func init() {
         "parameters": [
           {
             "type": "string",
-            "description": "ID of the payment to retrieve",
+            "description": "ID of the payment to delete",
             "name": "paymentID",
             "in": "path",
             "required": true

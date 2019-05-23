@@ -26,7 +26,7 @@ func NewPaymentsServer(s store.PaymentsStore, externalURL string) *PaymentsServe
 }
 
 func docHandler(w http.ResponseWriter, r *http.Request) {
-	bb := spec.SwaggerJSON
+	bb := spec.FlatSwaggerJSON
 	_, err := w.Write(bb)
 	if err != nil {
 		panic(err)
@@ -56,7 +56,7 @@ func (server *PaymentsServer) Serve(addr string) error {
 	r.HandleFunc("/payments", handle(server.CreatePayment)).Methods("POST")
 	r.HandleFunc("/payment/{id}", handle(server.GetPayment)).Methods("GET")
 	r.HandleFunc("/payment/{id}", handle(server.DeletePayment)).Methods("DELETE")
-	r.HandleFunc("/payment/{id}", handle(server.UpdatePayment)).Methods("UPDATE")
+	r.HandleFunc("/payment/{id}", handle(server.UpdatePayment)).Methods("PUT")
 	// Docs
 	r.HandleFunc("/swagger.json", handle(docHandler)).Methods("GET")
 	r.PathPrefix("/swaggerui").Handler(swaggerui)

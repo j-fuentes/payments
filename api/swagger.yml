@@ -108,7 +108,12 @@ paths:
           name: paymentID
           type: string
           required: true
-          description: ID of the payment to retrieve
+          description: ID of the payment to update
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/payment'
       responses:
         200:
           description: a payment
@@ -125,7 +130,7 @@ paths:
           name: paymentID
           type: string
           required: true
-          description: ID of the payment to retrieve
+          description: ID of the payment to delete
       responses:
         200:
           description: a payment
