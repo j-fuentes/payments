@@ -2,8 +2,6 @@
 
 ## How to run
 
-*Dev requirements*:  (code generation from specs), Go >= 1.11.
-
 You can run it natively (requires Go >= 1.11):
 
 ```
