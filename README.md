@@ -28,7 +28,7 @@ Some code is generated from that by running `make generate`. An extra dependency
 
 Among the generated code you can find models, validators and the full specification of the API (it can be accessed via [localhost:3000/swagger.json](http://localhost:3000/swagger.json)).
 
-For convenience, this also includes a UI that represents the specs of the API and also includes an in-browser client: [localhost:3000/swaggerui/](http://localhost:3000/swaggerui/**
+For convenience, this also includes a UI that represents the specs of the API and also includes an in-browser client: [localhost:3000/swaggerui/](http://localhost:3000/swaggerui/)
 
 ## Other considerations
 
