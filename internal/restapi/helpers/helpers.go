@@ -14,7 +14,7 @@ type Marshable interface {
 	Validate(formats strfmt.Registry) error
 }
 
-// WriteRes writes in an http response a Marshable
+// WriteRes writes in an http response a Marshable.
 func WriteRes(w http.ResponseWriter, m Marshable) {
 	err := m.Validate(nil)
 	if err != nil {
@@ -38,6 +38,7 @@ func WriteRes(w http.ResponseWriter, m Marshable) {
 	return
 }
 
+// WriteError writes an error.
 func WriteError(w http.ResponseWriter, code int, err error) {
 	m := &models.Error{
 		Code:    int64(code),

@@ -46,6 +46,7 @@ func (s *VolatilePaymentsStore) GetPayments(filter Filter) ([]*models.Payment, e
 	return result, nil
 }
 
+// CreatePayment creates a new Payment.
 func (s *VolatilePaymentsStore) CreatePayment(newPayment *models.Payment) (*models.Payment, error) {
 	if err := newPayment.Validate(nil); err != nil {
 		return nil, errors.BadRequestf("Payment not valid", err)
@@ -56,6 +57,7 @@ func (s *VolatilePaymentsStore) CreatePayment(newPayment *models.Payment) (*mode
 	return newPayment, nil
 }
 
+// GetPayment returns a Payment by its ID.
 func (s *VolatilePaymentsStore) GetPayment(id strfmt.UUID) (*models.Payment, error) {
 	for _, p := range s.payments {
 		if id.String() == p.ID.String() {
@@ -66,6 +68,7 @@ func (s *VolatilePaymentsStore) GetPayment(id strfmt.UUID) (*models.Payment, err
 	return nil, errors.NotFoundf("Payment with id %q", id.String())
 }
 
+// DeletePayment deletes a Payment by its ID.
 func (s *VolatilePaymentsStore) DeletePayment(id strfmt.UUID) error {
 	for i, p := range s.payments {
 		if id.String() == p.ID.String() {
@@ -77,6 +80,7 @@ func (s *VolatilePaymentsStore) DeletePayment(id strfmt.UUID) error {
 	return errors.NotFoundf("Payment with id %q", id.String())
 }
 
+// UpdatePayment updates a Payment by its ID.
 func (s *VolatilePaymentsStore) UpdatePayment(id strfmt.UUID, newPayment *models.Payment) (*models.Payment, error) {
 	if k, e := id.String(), newPayment.ID.String(); k != e {
 		return nil, errors.BadRequestf("Provided ID (%q) does not match embedded ID in new Payment (%q)", k, e)

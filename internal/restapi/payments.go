@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// GetPayments writes a list of Payments filtered by 'organisation-id', 'min-amount' and 'max-amount'.
 func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request) {
 	filter := store.NewFilter()
 
@@ -59,6 +60,7 @@ func (server *PaymentsServer) GetPayments(w http.ResponseWriter, r *http.Request
 	helpers.WriteRes(w, result)
 }
 
+// CreatePayment creates a new Payment with a new ID.
 func (server *PaymentsServer) CreatePayment(w http.ResponseWriter, r *http.Request) {
 	b, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -96,6 +98,7 @@ func (server *PaymentsServer) CreatePayment(w http.ResponseWriter, r *http.Reque
 	helpers.WriteRes(w, p)
 }
 
+// GetPayment writes a Payment with a given 'id'.
 func (server *PaymentsServer) GetPayment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := strfmt.UUID(params["id"])
@@ -114,6 +117,7 @@ func (server *PaymentsServer) GetPayment(w http.ResponseWriter, r *http.Request)
 	helpers.WriteRes(w, p)
 }
 
+// DeletePayment deletes a payment with a given 'id'.
 func (server *PaymentsServer) DeletePayment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := strfmt.UUID(params["id"])
@@ -132,6 +136,7 @@ func (server *PaymentsServer) DeletePayment(w http.ResponseWriter, r *http.Reque
 	helpers.WriteRes(w, &models.Empty{})
 }
 
+// UpdatePayment updates a payment with a given 'id'.
 func (server *PaymentsServer) UpdatePayment(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	id := strfmt.UUID(params["id"])
